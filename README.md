@@ -7,7 +7,7 @@ Utility scripts used in daily coding
 $ fuckyou
 ```
 ```bash
-$ fuckyou [anyword]
+$ fuckyou [anywords]
 ```
 your computer will ungry and down
 ### Reboot Mode(Tsundere)
