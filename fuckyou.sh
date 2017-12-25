@@ -5,8 +5,10 @@ echo "FUCK YOU TOO!!!"
 
 if [ $# -ne 0 ] ; then
 	if [ $1$2$3$4 = $tsundere_word ] ; then
-	echo "..."
-	sudo shutdown -r now
+		echo "..."
+		sudo shutdown -r now
+	else
+		sudo shutdown -h now
 	fi
 else
 	sudo shutdown -h now
