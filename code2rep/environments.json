@@ -1,0 +1,10 @@
+{
+  "_comment": "extension: command",
+  "py": "python3", 
+  "dart": "dart",
+  "js": "node",
+  "c": "gcc",
+  "cpp": "g++ -lm",
+  "rb": "ruby",
+  "java": "javac"
+}
