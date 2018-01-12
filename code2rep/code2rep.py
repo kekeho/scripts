@@ -4,6 +4,7 @@ import sys
 import pdfkit
 import json
 from markdown import markdown
+import subprocess
 
 SOURCE_CODE_TITLE = 'ソースコード'
 RESULT_TITLE = '実行結果'
@@ -31,7 +32,7 @@ def makeMD(codes):
 
         md_str += '\n\n### {}\n'.format(code['file_name'])  # add filename
         md_str += '```{type}\n{code}\n```\n'.format(
-            type='python', code=code['code'])  # add code
+            type=code['extension'], code=code['code'])  # add code
     return md_str
 
 
@@ -55,17 +56,38 @@ def htmlToPDF(html_str):
     pdfkit.from_string(html_str, 'report.pdf', options=options)
 
 
-def makeResult(results, env):
-    env = json.load(env)
-    pass  # TODO: 拡張子と実行環境の参照→実行の流れを作る
+def makeResult(results, env_file):
+    env = json.load(env_file)
+    ret = []
+    for filename in results:  # 拡張子だけ抽出
+        try:
+            environment = env[filename.split('.')[1]]  # 拡張子を取得し環境を特定
+        except KeyError as e:
+            print(
+                'Error!\nA file with an extension not in the "environments.json" was entered.')
+            exit()
+
+        command = (environment, filename)
+        try:
+            ret.append({'file_name': 'result ' + filename, 'code': subprocess.check_output(
+                command).decode('utf-8'), 'extension': None})
+        except subprocess.CalledProcessError as e:
+            print('Execute Error!\n', e, ret)  # 実行エラー
+            exit()
+
+    return(ret)
 
 
 def main(files):
     with open('environments.json', 'r') as env_file:
-        makeResult(files['results'], env_file)
+        results = makeResult(files['results'], env_file)
     codes = []
     for source in files['sources']:
         codes.append(importCode(source))
+
+    for result in results:
+        codes.append(result)
+
     md = makeMD(codes)
     html = mdToHTML(md)
     htmlToPDF(html)
@@ -73,8 +95,8 @@ def main(files):
 
 def printUsage():
     print("""Usage:
-    code2rep.py [OPTION] [SOURCE_FILES] -> [RESULT_FILES]
-    EXAMPLE: code2rep utils.js main.js -> main.js
+    code2rep.py [OPTION] [SOURCE_FILES] : [RESULT_FILES]
+    EXAMPLE: code2rep utils.js main.js : main.js
     
     OPTIONS:
         -m : output markdown only
